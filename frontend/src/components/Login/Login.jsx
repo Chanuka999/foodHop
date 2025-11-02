@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
+  FaArrowRight,
   FaCheckCircle,
   FaEye,
   FaEyeSlash,
@@ -83,7 +85,28 @@ const Login = ({ onLoginSuccess, onClose }) => {
             {showPassword ? <FaEyeSlash /> : <FaEye />}
           </button>
         </div>
+
+        <div className="flex items-center">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              name="rememberMe"
+              checked={formData.rememberMe}
+              onChange={handleChange}
+              className="form-checkbox h-5 w-5 text-amber-600 bg-[#2D1B0E] border-amber-400 rounded focus:ring-amber-600"
+            />
+            <span className="ml-2 text-amber-100">Remember me</span>
+          </label>
+        </div>
+
+        <button className="w-full py-3 bg-gradient-to-r from-amber-400 to-amber-600 text-[#2D1B0E] font-bold rounded-lg flex items-center justify-center gap-2 hover:scale-105 transition-transform">
+          Sign in <FaArrowRight />
+        </button>
       </form>
+
+      <div className="text-center">
+        <Link></Link>
+      </div>
     </div>
   );
 };
