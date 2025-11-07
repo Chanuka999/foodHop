@@ -1,11 +1,44 @@
 import React, { useState } from "react";
 import { cardData, additionalData } from "../../assets/dummydata";
 import { useCart } from "../../CartContext/CartContex";
+import { FaFire, FaHeart, FaPlus, FaStar } from "react-icons/fa";
+import { HiMinus, HiPlus } from "react-icons/hi";
+import FloatingParticle from "../floatingParticle/FloatingParticle";
 
 const SpecialOffer = () => {
   const [showAll, setShowAll] = useState(false);
   const initialData = [...cardData, ...additionalData];
-  const { cartItems = [] } = useCart();
+  const { addToCart, updateCart, removeFromCart, cartItems } = useCart();
+  // Button style helpers (was missing and caused ReferenceError)
+  const addButtonBase =
+    "relative inline-flex items-center gap-2 px-4 py-2 bg-amber-400 hover:bg-amber-500 text-amber-900 rounded-full overflow-hidden font-semibold";
+  const addButtonMove = "transform hover:scale-105";
+  const commonTransition = "transition-all duration-300 ease-in-out";
+
+  // Safe updateQuantity wrapper: uses updateCart if provided by CartContext, otherwise falls back
+  const updateQuantity = (id, qty) => {
+    if (typeof updateCart === "function") {
+      return updateCart(id, qty);
+    }
+    // fallback behavior: remove or add using available methods
+    if (qty <= 0) {
+      if (typeof removeFromCart === "function") return removeFromCart(id);
+      return;
+    }
+    if (typeof addToCart === "function") {
+      const item = initialData.find((i) => i.id == id);
+      if (item) {
+        return addToCart(
+          {
+            ...item,
+            name: item.title,
+            price: parseFloat(String(item.price).replace("e", "")),
+          },
+          qty
+        );
+      }
+    }
+  };
   return (
     <div className="bg-gradient-to-b from-[#1a1212] to-[#2a1e1e] text-white py-16 px-4 font-[Poppins]">
       <div className="max-w-7xl mx-auto">
@@ -37,11 +70,94 @@ const SpecialOffer = () => {
                       alt={item.title}
                       className="w-full h-full object-cover brightness-90 group-hover:brightness-100 transition-all duration-500"
                     />
+                    <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center bg-black/40 backdrop-blur-sm px-4 py-2 rounded-full">
+                      <span className="flex items-center gap-2 text-amber-400">
+                        <FaStar className="text-xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" />
+                        <span className="font-bold">{item.rating}</span>
+                      </span>
+                      <span className="flex items-center gap-2 text-red-400">
+                        <FaHeart className="text-xl animate-heartbeat" />
+                        <span className="font-bold">{item.hearts}</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-6 relative z-10">
+                    <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-amber-300 to-amber-500 bg-clip-text text-transparent font-[Playfair_Display] italic">
+                      {item.title}
+                    </h3>
+                    <p className="text-gray-300 mb-5 text-sm leading-relaxed tracking-wide">
+                      {item.description}
+                    </p>
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-2xl font-bold text-amber-400 flex-1">
+                        {item.price}
+                      </span>
+
+                      {cartItem ? (
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => {
+                              quantity > 1
+                                ? updateQuantity(item.id, quantity - 1)
+                                : removeFromCart(item.id);
+                            }}
+                            className="w-8 h-8 rounded-full bg-amber-900/40 flex items-center justify-center hover:bg-amber-800/50 transition-all duration-200 active:scale-95 "
+                          >
+                            <HiMinus className="w-4 h-4 text-amber-100" />
+                          </button>
+                          <span className="w-8 text-center text-amber-100 font-cinzel">
+                            {quantity}
+                          </span>
+                          <button
+                            onClick={() => {
+                              updateQuantity(item.id, quantity + 1);
+                            }}
+                            className="w-8 h-8 rounded-full bg-amber-900/40 flex items-center justify-center hover:bg-amber-800/50 transition-all duration-200 active:scale-95 "
+                          >
+                            <HiPlus className="w-4 h-4 text-amber-100" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() =>
+                            addToCart(
+                              {
+                                ...item,
+                                name: item.title,
+                                price: parseFloat(item.price.replace("e", "")),
+                              },
+                              1
+                            )
+                          }
+                          className={`${addButtonBase} ${addButtonMove} ${commonTransition}`}
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-r from-amber-500/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
+                          <FaPlus className="text-lg transition-transform" />
+                          <span className="relative z-10">Add</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="absolute inset-0 rounded-3xl pointer-events-none border-2 border-transparent group-hover:border-amber-500/30 transition-all duration-500" />
+                  <div className="opacity-0 group-hover:opacity-100">
+                    <FloatingParticle />
                   </div>
                 </div>
               );
             }
           )}
+        </div>
+
+        <div className="mt-12 flex justify-center">
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className="flex items-center gap-3 bg-gradient-to-r from-red-700 to-amber-700 text-white px-8 py-4 rounded-2xl font-bold text-lg uppercase tracking-wider hover:gap-4 hover:scale-105 hover:shadow-xl hover:shadow-amber-500/20 transition-all duration-300 group border-2 border-amber-400 overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r fill-amber-500/20 via-transparent to-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <FaFire className="text-xl animate-pulse" />
+          </button>
         </div>
       </div>
     </div>
