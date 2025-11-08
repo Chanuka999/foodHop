@@ -157,6 +157,8 @@ const SpecialOffer = () => {
           >
             <div className="absolute inset-0 bg-gradient-to-r fill-amber-500/20 via-transparent to-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             <FaFire className="text-xl animate-pulse" />
+            <span>{showAll ? "Show less" : "Show More"}</span>
+            <div className="h-full w-1 bg-amber-400/30 absolute right-0 top-0 group-hover:animate-border-pulse"></div>
           </button>
         </div>
       </div>
