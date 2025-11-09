@@ -19,7 +19,8 @@ const cartReducer = (state, action) => {
       }
       return [...state, { ...item, quantity }];
     }
-    case "REMOVE_QUANTITY": {
+    // handle item removal
+    case "REMOVE_ITEM": {
       return state.filter((i) => i.id !== action.payload.itemId);
     }
 
@@ -70,7 +71,8 @@ export const CartProvider = ({ children }) => {
     dispatch({ type: "ADD_ITEM", payload: { item, quantity } });
   }, []);
 
-  const removeFormCart = useCallback((itemId) => {
+  // correctly named removeFromCart (was removeFormCart) and dispatches REMOVE_ITEM
+  const removeFromCart = useCallback((itemId) => {
     dispatch({ type: "REMOVE_ITEM", payload: { itemId } });
   }, []);
 
@@ -82,7 +84,7 @@ export const CartProvider = ({ children }) => {
       value={{
         cartItems,
         addToCart,
-        removeFormCart,
+        removeFromCart,
         updateQuantity,
         cartTotal,
         totalItems: formatTotalItems(totalItemsCount),
