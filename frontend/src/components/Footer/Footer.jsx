@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 import { FaRegEnvelope } from "react-icons/fa";
 import { BiChevronRight } from "react-icons/bi";
+import { socialIcons } from "../../assets/dummydata";
+
+const navItem = [
+  { name: "Home", link: "/" },
+  { name: "Menu", link: "/menu" },
+  { name: "About us", link: "/about" },
+  { name: "Contact", link: "/contact" },
+];
 
 const Footer = () => {
   const [email, setEmail] = useState("");
@@ -57,7 +65,59 @@ const Footer = () => {
               <h3 className="text-xl font-semibold mb-4 border-1-4 border-amber-400 pl-3 font-merriweather italic text-amber-300">
                 Navigate
               </h3>
+              <ul className="space-y-3">
+                {navItem.map((item) => (
+                  <li key={item.name}>
+                    <a
+                      href={item.link}
+                      className="flex items-center hover:text-amber-400 transition-all group font-lora hover:pl-2"
+                    >
+                      <BiChevronRight />
+                      <span>{item.name}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </div>
+          </div>
+
+          <div className="flex justify-center md:justify-end">
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold mb-4 border-1-4 border-amber-400 pl-3 font-marriwether italic text-amber-300">
+                Social Connect
+              </h3>
+              <div className="flex space-x-4">
+                {socialIcons.map(({ icon: Icon, link, color, label }, idx) => (
+                  <a
+                    target="_blank"
+                    href={link}
+                    key={idx}
+                    className="text-2xl bg-amber-400/10 p-3 rounded-full hover:bg-amber-400/20 hover:scale-line transition-all duration-300 relative group"
+                    style={{ color }}
+                  >
+                    <Icon className="hover:scale-125 transition-transform" />
+                    <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-amber-400 text-black px-2 py-1 rounded text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                      {label}
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-amber-800 pt-8 mt-8 text-center">
+          <p className="text-amber-400 text-lg mb-2 font-playfair">
+            &copy:2026 Foodie-Frenzy.All rights reserved.
+          </p>
+          <div className="group inline-block">
+            <a
+              href="https://www.hexagondigitalservices.com/"
+              target="_blank"
+              className="text-lg font-sacramento bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 bg-clip-text text-transparent hover:text-purple-300 transition-all duration-500"
+            >
+              Designed by Hexagon Digital services
+            </a>
           </div>
         </div>
       </div>
