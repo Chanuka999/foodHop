@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import { motion, scale } from "framer-motion";
 import { features, stats, teamMembers } from "../../assets/dummydata";
+import { FaXTwitter } from "react-icons/fa6";
+import { FaFacebookF, FaInstagram, FaLinkedinIn } from "react-icons/fa";
 
 const About = () => {
-  const [hoveredStat, setHoverdStat] = useState(null);
+  // track which stat (index) is hovered; keep setter name spelled correctly
+  const [hoveredStat, setHoveredStat] = useState(null);
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a120b] via-[#3c2a21] to-[#1a120b] text-amber-500 overflow-hidden relative">
       <div className="about insert-0 opacity-10 mix-blend-soft-light" />
@@ -79,7 +82,8 @@ const About = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.2, type: "spring" }}
                 className="relative group h-48"
-                onHoverStart={() => setHoverdStat(i)}
+                onHoverStart={() => setHoveredStat(i)}
+                onHoverEnd={() => setHoveredStat(null)}
                 animate={{
                   scale: hoveredStat == i ? 1.05 : 1,
                   zIndex: hoveredStat === i ? 10 : 1,
@@ -97,11 +101,136 @@ const About = () => {
                     },
                   }}
                 >
-                  <div className="relative w-full bg-[#3c2a21]/40 backdrop-blur-lg rounded-xl border-2 border-amber-600/30 p-6 overflow-hidden transition-all duration-300"></div>
+                  <div className="relative w-full bg-[#3c2a21]/40 backdrop-blur-lg rounded-xl border-2 border-amber-600/30 p-6 overflow-hidden transition-all duration-300">
+                    <motion.div
+                      className="absolute inset-0 rounded-xl"
+                      animate={{
+                        background: [
+                          "linear-gradient(45deg, #3c2a21 0%, #1a120b 50%, #3c2a21 100%)",
+                          "linear-gradient(45deg, #3c2a21 0%, #1a120b 80%, #3c2a21 100%)",
+                          "linear-gradient(45deg, #3c2a21 0%, #1a120b 50%, #3c2a21 100%)",
+                        ],
+                      }}
+                      transition={{ duration: 6, repeat: Infinity }}
+                    >
+                      <div className="absolute inset-0 rounded-xl shadow-lg shadow-amber-900/20" />
+                      <div className="relative z-10 h-full flex flex-col items-center justify-center">
+                        <motion.div
+                          className="mb-4 p-3 rounded-full bg-amber-900/30 border border-amber-700/30"
+                          whileHover={{ scale: 0.1, rotate: 10 }}
+                        >
+                          <Icon className="w-8 h-8 text-amber-500/90" />
+                        </motion.div>
+
+                        <div className="text-4xl font-bold mb-1 bg-clip-text bg-gradient-to-r from-amber-200 to-amber-400 text-transparent">
+                          {s.number}
+                        </div>
+                        <motion.div
+                          className="text-sm uppercase tracking-widest font-medium text-amber-100/80"
+                          animate={{
+                            letterSpacing:
+                              hoveredStat === i ? "0.15em" : "0.1em",
+                            textShadow:
+                              hoveredStat === i
+                                ? "0 0 8px rgba(245,158,11,0.4"
+                                : "none",
+                          }}
+                        >
+                          {s.label}
+                        </motion.div>
+                      </div>
+
+                      <motion.div
+                        className="absolute inset-x-4 bottom-0 h-8 bg-amber-900/30 blur-xl blur-xl rounded-full"
+                        animate={{
+                          opacity: hoveredStat === i ? 0.4 : 0.2,
+                          scale: hoveredStat === i ? 0.9 : 0.8,
+                        }}
+                      ></motion.div>
+                    </motion.div>
+                  </div>
                 </motion.div>
               </motion.div>
             );
           })}
+        </div>
+      </section>
+
+      <section className="py-16 px-4 md:px-8 relative">
+        <div className="max-w-7xl mx-auto">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 20 }}
+            className="text-4xl font-serif sm:text-6xl font-bold text-center mb-12 text-amber-100"
+          >
+            Meet Our <span className="text-amber-500">Culnary Articalse</span>
+          </motion.h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:frid-cols-3 gap-8 lg:gap-12">
+            {teamMembers.map((m, i) => {
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "0px 0px -140px opx" }}
+                transition={{ delay: m.body }}
+                className="relative h-full bg-[#3c2a21]/10 backdrop-blur-lg rounded-3xl overflow-hidden border-2  border-amber-600/30 hover:border-amber-500 transition-all duration-500/20"
+              >
+                <div className="relative h-64 sm:h-96 overflow-hidden">
+                  <motion.img
+                    src={m.img}
+                    alt={m.name}
+                    className="w-full h-full object-error initial={{scale:1}} whileMover={{scale:1.1}}"
+                  />
+                  <div
+                    className="relative h-full object-cover"
+                    initial={{ scale: 1 }}
+                    whiteWethor={{ scale: 1.1 }}
+                    transition={{ duration: 0.5 }}
+                  ></div>
+
+                  <div className="p-8 text-center fixed-col h-[cal(100%-24rem)">
+                    <div className="mb-4">
+                      <h3 className="text-3xl font-bold mb-2 text-amber-100">
+                        {m.name}
+                      </h3>
+                      <p className="text-amber-500 text-lg font-medium font-cursives">
+                        {m.role}
+                      </p>
+                    </div>
+
+                    <p className="text-amber-100/80 text-lg font-cersive flex-grow">
+                      {m.bio}
+                    </p>
+                    <motion.div
+                      className="flex justify-center gap-4 pt-6"
+                      initial={{ scale }}
+                      whileInView={{ scale: 1 }}
+                    >
+                      {Object.entries(m.social).map(([p, url]) => (
+                        <a
+                          key={p}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-amber-500 hover:text-amber-400 transition-colors duration-300 hover:scale-110"
+                        >
+                          {
+                            {
+                              twitter: <FaXTwitter className="w-6 h-6" />,
+                              instagram: <FaInstagram className="w-6 h-6" />,
+                              facebook: <FaFacebookF className="w-6 h-6" />,
+                              linkedin: <FaLinkedinIn className="w-6 h-6" />,
+                            }[p]
+                          }
+                        </a>
+                      ))}
+                    </motion.div>
+                  </div>
+                </div>
+              </motion.div>;
+            })}
+          </div>
         </div>
       </section>
     </div>
