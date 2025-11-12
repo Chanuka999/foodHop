@@ -67,15 +67,13 @@ const CartPage = () => {
                     >
                       <FaMinus className="w-8 text-center text-amber-100 font-cinzel" />
                     </button>
-                    <span className="w-8 text-center text-amver-100 font-cinzel">
+                    <span className="w-8 text-center text-amber-100 font-cinzel">
                       {item.quantity}
                     </span>
                     <button
                       onClick={() =>
-                        updateQuantity(
-                          item.id,
-                          Math.max(item.id, item.quantity + 1)
-                        )
+                        // increment quantity by one
+                        updateQuantity(item.id, item.quantity + 1)
                       }
                       className="w-8 h-8 rounded-full bg-amber-900/40 flex items-center justify-center hover:bg-amber-100/50 transition-all duration-200 active-scale-95"
                     >
@@ -108,7 +106,7 @@ const CartPage = () => {
 
                 <div className="flex items-center gap-8">
                   <h2 className="text-3xl font-dancingscript text-amber-100">
-                    Total:LKR{cartTotal}
+                    Total: LKR{(cartTotal ?? 0).toFixed(2)}
                   </h2>
                   <button className="bg-amber-900/40 px-8 py-3 rounded-full font-cinzel uppercase tracking-wider hover:bg-amber-800/10 transition-all duration-300 text-amber-100 flex items-center gap-2 hover:gap-3 active:scale-95">
                     Checkut now
