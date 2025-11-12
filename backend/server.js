@@ -3,9 +3,15 @@ import cors from "cors";
 import "dotenv/config";
 import { connectDb } from "./config/Db.js";
 import userRouter from "./routes/userRouter.js";
+import path from "path";
+import { fileURLToPath } from "url";
+import itemRouter from "./routes/itemRoute.js";
 
 const app = express();
 const port = process.env.PORT || 4000;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 //middleware
 app.use(
@@ -28,6 +34,8 @@ connectDb();
 
 //routes
 app.use("/api/user", userRouter);
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/api/items", itemRouter);
 
 app.get("/", (req, res) => {
   res.send("Api worked");
