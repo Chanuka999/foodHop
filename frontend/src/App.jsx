@@ -6,6 +6,7 @@ import Menu from "./pages/Menu/Menu";
 import Cart from "./pages/Cart/Cart";
 import Login from "./components/Login/Login";
 import SignUp from "./components/SignUp/SignUp";
+import PrivateRoute from "./components/PrivateRoute/PrivateRoute";
 
 function App() {
   return (
@@ -14,9 +15,18 @@ function App() {
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/menu" element={<Menu />} />
-      <Route path="/cart" element={<Cart />} />
+
       <Route path="/login" element={<Home />} />
       <Route path="/signup" element={<SignUp />} />
+
+      <Route
+        path="/cart"
+        element={
+          <PrivateRoute>
+            <Cart />
+          </PrivateRoute>
+        }
+      />
     </Routes>
   );
 }
