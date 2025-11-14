@@ -1,9 +1,8 @@
 import asyncHandler from "express-async-handler";
-import { cartItem } from "../models/cartModel";
-import { Children } from "react";
+import CartItem from "../models/cartModel.js";
 
-export const getCart = asyncHandler(async (requestAnimationFrame, res) => {
-  const items = await cartItem.find({ user: req.user._id }).populate("item");
+export const getCart = asyncHandler(async (req, res) => {
+  const items = await CartItem.find({ user: req.user._id }).populate("item");
 
   const formatted = items.map((ci) => ({
     _id: ci._id.toString(),
@@ -20,51 +19,51 @@ export const addToCart = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error("itemId and quantity are required");
   }
-  let cartItem = await cartItem.find({ user: req.user._id, item: itemId });
 
-  if (cartItem) {
-    cartItem.quantity = Math.max(1, cartItem.quantity + quantity);
+  let existing = await CartItem.findOne({ user: req.user._id, item: itemId });
 
-    if (cartItem.quantity < 1) {
-      await cartItem.remove();
+  if (existing) {
+    existing.quantity = Math.max(1, existing.quantity + quantity);
+
+    if (existing.quantity < 1) {
+      await existing.deleteOne();
       return res.json({
-        _id: cartItem._id.toString(),
-        item: cartItem.item,
+        _id: existing._id.toString(),
+        item: existing.item,
         quantity: 0,
       });
     }
-    await cartItem.save();
-    await cartItem.populate("item");
+    await existing.save();
+    await existing.populate("item");
     return res.status(200).json({
-      _id: cartItem._id.toString(),
-      item: cartItem.item,
-      quantity: cartItem.quantity,
+      _id: existing._id.toString(),
+      item: existing.item,
+      quantity: existing.quantity,
     });
   }
 
-  cartItem = await cartItem.create({
+  const newCartItem = await CartItem.create({
     user: req.user._id,
     item: itemId,
     quantity,
   });
-  await cartItem.populate("item");
+  await newCartItem.populate("item");
   res.status(201).json({
-    _id: cartItem._id.toString(),
-    item: cartItem.item,
-    quantity: cartItem.quantity,
+    _id: newCartItem._id.toString(),
+    item: newCartItem.item,
+    quantity: newCartItem.quantity,
   });
 });
 
 export const updateCartItem = asyncHandler(async (req, res) => {
   const { quantity } = req.body;
 
-  const cartItem = await cartItem.findOne({
+  const cartItem = await CartItem.findOne({
     _id: req.params.id,
     user: req.user._id,
   });
 
   if (!cartItem) {
-    req.status;
     res.status(404);
     throw new Error("Cart item not found");
   }
@@ -78,10 +77,10 @@ export const updateCartItem = asyncHandler(async (req, res) => {
   });
 });
 
-//delete
+// delete
 export const deleteCartItem = asyncHandler(async (req, res) => {
-  const cartItem = await cartItem.findOne({
-    _id: req.params._id,
+  const cartItem = await CartItem.findOne({
+    _id: req.params.id,
     user: req.user._id,
   });
   if (!cartItem) {
@@ -93,6 +92,6 @@ export const deleteCartItem = asyncHandler(async (req, res) => {
 });
 
 export const clearCart = asyncHandler(async (req, res) => {
-  await cartItem.deleteMany({ user: req.user._id });
+  await CartItem.deleteMany({ user: req.user._id });
   res.json({ message: "Cart Cleared" });
 });
