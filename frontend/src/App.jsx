@@ -9,6 +9,7 @@ import SignUp from "./components/SignUp/SignUp";
 import PrivateRoute from "./components/PrivateRoute/PrivateRoute";
 import VerifyPaymentPage from "./pages/VerifyPaymentPage/VerifyPaymentPage";
 import CheckoutPage from "./pages/CheckoutPage/CheckoutPage";
+import MyOrderPage from "./pages/MyOrderPage.jsx/MyOrderPage";
 
 function App() {
   return (
@@ -36,6 +37,14 @@ function App() {
         element={
           <PrivateRoute>
             <CheckoutPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/myorder"
+        element={
+          <PrivateRoute>
+            <MyOrderPage />
           </PrivateRoute>
         }
       />
