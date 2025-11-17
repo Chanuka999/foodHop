@@ -22,24 +22,28 @@ export const createItem = async (req, res, next) => {
     res.status(201).json({
       success: true,
       data: saved,
-      message: "item added succesfully",
+      message: "item added successfully",
     });
   } catch (error) {
     if (error.code === 11000) {
       res.status(400).json({ message: "Item amd already exits" });
+    } else {
+      next(error);
     }
   }
 };
 
 export const getItems = async (req, res, next) => {
   try {
-    const item = (await itemModel.find()).sort({ createdAt: -1 });
-    const host = `${(req, protocol)}://${req.get("host")}`;
+    const items = await itemModel.find().sort({ createdAt: -1 });
+    const host = `${req.protocol}://${req.get("host")}`;
 
-    const withFullUrl = itemModel.applyTimestamps((i) => ({
-      ...toObject(),
-      imageUrl: i.imageUrl ? host + i.imageUrl : "",
-    }));
+    const withFullUrl = items.map((i) => {
+      const obj = typeof i.toObject === "function" ? i.toObject() : { ...i };
+      obj.imageUrl = i.imageUrl ? host + i.imageUrl : "";
+      return obj;
+    });
+
     res.json(withFullUrl);
   } catch (error) {
     next(error);
