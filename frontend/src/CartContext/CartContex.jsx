@@ -29,7 +29,7 @@ const cartReducer = (state, action) => {
       return state.filter((ci) => ci._id !== action.payload);
     }
 
-    case "UPDATE_QUANTITY": {
+    case "UPDATE_ITEM": {
       const { _id, quantity } = action.payload;
       return state.map((ci) => (ci._id === _id ? { ...ci, quantity } : ci));
     }
@@ -101,7 +101,7 @@ export const CartProvider = ({ children }) => {
         headers: { Authorization: `Bearer ${token}` },
       }
     );
-    dispatch({ type: "UPDATE_QUANTITY", payload: res.data });
+    dispatch({ type: "UPDATE_ITEM", payload: res.data });
   }, []);
 
   const clearCart = useCallback(async () => {
@@ -116,6 +116,13 @@ export const CartProvider = ({ children }) => {
     );
     dispatch({ type: "CLEAR_CART" });
   }, []);
+
+  const totalItems = cartItems.reduce((sum, ci) => sum + ci.quantity, 0);
+  const totalAmount = cartItems.reduce((sum, ci) => {
+    const price = ci?.item?.price ?? 0;
+    const qty = ci?.quantity ?? 0;
+    return sum + price * qty;
+  }, 0);
   return (
     <CartContext.Provider
       value={{
@@ -123,8 +130,9 @@ export const CartProvider = ({ children }) => {
         addToCart,
         removeFromCart,
         updateQuantity,
-        cartTotal,
-        totalItems: formatTotalItems(totalItemsCount),
+        clearCart,
+        totalItems,
+        totalAmount,
       }}
     >
       {children}
