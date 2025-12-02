@@ -10,9 +10,16 @@ import {
   FaUserPlus,
 } from "react-icons/fa";
 import { iconClass, inputBase } from "../../assets/dummydata";
+import axios from "axios";
+
+const url = "http://localhost:4000";
 
 const Login = ({ onLoginSuccess, onClose }) => {
-  const [showToast, setShowToast] = useState(false);
+  const [showToast, setShowToast] = useState({
+    visible: false,
+    message: "",
+    isError: false,
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
@@ -25,14 +32,48 @@ const Login = ({ onLoginSuccess, onClose }) => {
     if (stored) setFormData(JSON.parse(stored));
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    formData.rememberMe
-      ? localStorage.setItem("loginData", JSON.stringify(formData))
-      : localStorage.removeItem("loginData");
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
-    onLoginSuccess();
+    try {
+      const res = await axios.post(`${url}/api/user/login`, {
+        email: formData.email,
+        password: formData.password,
+      });
+      console.log("Axios Res :", res);
+
+      if (res.status === 200 && res.data.success && res.data.token) {
+        localStorage.setItem("authToken", res.data.token);
+
+        formData.rememberMe
+          ? localStorage.setItem("loginData", JSON.stringify(formData))
+          : localStorage.removeItem("loginData");
+
+        setShowToast({
+          visible: true,
+          message: "login successfull",
+          isError: false,
+        });
+        setTimeout(() => {
+          setShowToast({ visible: false, message: "", isError: false });
+          onLoginSuccess(res.data.token);
+        }, 1500);
+      } else {
+        console.error("Unexpected Err :", res.data);
+        throw new Error(res.data.message || "Login failed");
+      }
+    } catch (err) {
+      console.error("Axios error :", err);
+      if (err.responce) {
+        console.error("server res:", err.response.status, err.response.data);
+      }
+      const msg = err.responce?.data?.message || err.message || "Login failed";
+
+      setShowToast({ visible: true, message: msg, isError: true });
+      setTimeout(() => {
+        setShowToast({ visible: false, message: "", isError: false });
+        onLoginSuccess(res.data.token);
+      }, 2000);
+    }
   };
 
   const handleChange = ({ target: { name, value, type, checked } }) =>
@@ -46,7 +87,9 @@ const Login = ({ onLoginSuccess, onClose }) => {
     <div className="space-y-6 relative">
       <div
         className={`fixed top-4 right-4 z-50 transition-all duration-300 ${
-          showToast ? "translate-y-0 opacity-100" : "-translate-y-20 opacity-0"
+          showToast.visible
+            ? "translate-y-0 opacity-100"
+            : "-translate-y-20 opacity-0"
         }`}
       >
         <div className="bg-green-600 text-white px-4 py-3 rounded-md shadow-lg flex items-center gap-2 text-sm">
