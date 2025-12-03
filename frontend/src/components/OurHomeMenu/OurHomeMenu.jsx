@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useCart } from "../../CartContext/CartContex";
 import { dummyMenuData } from "../../assets/OmhDD";
 import { FaMinus, FaPlus } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import "./OurHomeMenu.css";
+import axios from "axios";
 
 const categories = [
   "Breakfast",
@@ -17,12 +18,36 @@ const categories = [
 
 const OurHomeMenu = () => {
   const [activeCategory, setActiveCategory] = useState(categories[0]);
-  const displayItems = (dummyMenuData[activeCategory] || []).slice(0, 4);
+  const { cartItems, addToCart, removeFromCart, updateQuantity } = useCart();
+  const [menuData, setMenuData] = useState({});
 
-  // `useCart` provides `cartItems` (array). Guard with empty array to avoid .find on undefined
-  const { cartItems, addToCart, removeFromCart } = useCart();
-  const getQuantity = (id) =>
-    (cartItems || []).find((i) => i.id === id)?.quantity || 0;
+  useEffect(() => {
+    axios
+      .get("http://localhost:4000/api/items")
+      .then((res) => {
+        const grouped = res.data.reduce((acc, item) => {
+          acc[item.category] = acc[item.category] || [];
+          acc[item.category].push(item);
+          return acc;
+        }, {});
+        setMenuData(grouped);
+      })
+      .catch(console.error);
+  }, []);
+
+  const getCartEntry = (id) =>
+    cartItems.find((ci) => {
+      if (!ci) return false;
+      const itm = ci.item;
+      if (!itm) return false;
+      if (typeof itm === "string") return itm === id;
+      if (typeof itm === "object") return itm._id === id || itm.id === id;
+      return false;
+    });
+
+  const getQuantity = (id) => getCartEntry(id)?.quantity || 0;
+  const displayItems = (menuData[activeCategory] || []).slice(0, 4);
+
   return (
     <div className="bg-gradient-to-br from-[#1a120b] via-[#2a1e14] to-[#3e2b1d] min-h-screen py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -53,16 +78,17 @@ const OurHomeMenu = () => {
 
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
           {displayItems.map((item, i) => {
-            const quantity = getQuantity(item.id);
+            const qty = getQuantity(item._id);
+            const cartEntry = getCartEntry(item._id);
             return (
               <div
-                key={item.id}
+                key={item._id}
                 className="relative bg-amber-900/20 rounded-2xl overflow-hidden border border-amber-800/30 backdrop-blur-sm flex flex-col transition-all duration-500"
                 style={{ "--index": i }}
               >
                 <div className="relative h-48 sm:h-56 md:h-60 flex  items-center justify-center bg-black/10">
                   <img
-                    src={item.image}
+                    src={item.image || item.imageUrl || ""}
                     alt={item.name}
                     className="max-h-full max-w-full object-contain transition-all duration-700"
                   />
@@ -79,36 +105,40 @@ const OurHomeMenu = () => {
                   <div className="mt-auto flex items-center gap-4 justify-between">
                     <div className="bg-amber-100/10 backdrop-blur-sm px-3 py-1 rounded-2xl shadow-lg">
                       <span className="text-xl font-bold text-amber-300 font-dancingscript">
-                        LKR{item.price}
+                        LKR{Number(item.price).toFixed(2)}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {quantity > 0 ? (
+                      {qty > 0 ? (
                         <>
                           <button
                             className="w-8 h-8 rounded-full bg-amber-900/40 flex items-center justify-center hover:bg-amber-800/50 transition-colors"
                             onClick={() =>
-                              quantity > 1
-                                ? addToCart(item, quantity - 1)
-                                : removeFromCart(item.id)
+                              qty > 1
+                                ? updateQuantity(cartEntry._id, qty - 1)
+                                : removeFromCart(cartEntry._id)
                             }
                           >
                             <FaMinus className="text-amber-100" />
                           </button>
                           <span className="w-8 text-center text-amber-100">
-                            {quantity}
+                            {qty}
                           </span>
                           <button
                             className="w-8 h-8 rounded-full bg-amber-900/40 flex items-center justify-center hover:bg-amber-800/50 transition-colors"
-                            onClick={() => addToCart(item, quantity + 1)}
+                            onClick={() =>
+                              updateQuantity(cartEntry._id, qty + 1)
+                            }
                           >
                             <FaPlus className="text-amber-100" />
                           </button>
                         </>
                       ) : (
                         <button
-                          onClick={() => addToCart(item, 1)}
+                          onClick={() =>
+                            addToCart({ ...item, _id: item._id || item.id }, 1)
+                          }
                           className="bg-amber-900/40 px-4 py-1.5 rounded-full font-cinzel text-xs uppercase sm:text-sm tracking-wider transition-transform duration-100 hover:scale-110 hover:shadow-lg hover:shadow-amber-900/20 relative overflow-hidden border border-amber-800/50"
                         >
                           <span className="relative z-10 text-xs text-black">
