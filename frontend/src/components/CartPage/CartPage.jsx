@@ -8,7 +8,7 @@ const CartPage = () => {
     cartItems = [],
     updateQuantity,
     removeFromCart,
-    cartTotal,
+    totalAmount,
   } = useCart();
 
   const [selectedImage, setSelectedImage] = useState(null);

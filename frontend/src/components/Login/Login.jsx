@@ -92,9 +92,16 @@ const Login = ({ onLoginSuccess, onClose }) => {
             : "-translate-y-20 opacity-0"
         }`}
       >
+        <div
+          className={`px-4 py-3 rounded-md shadow-lg flex items-center gap-2 text-sm ${
+            showToast.isError
+              ? "bg-red-600 text-white"
+              : "bg-green-400 text-white"
+          }`}
+        ></div>
         <div className="bg-green-600 text-white px-4 py-3 rounded-md shadow-lg flex items-center gap-2 text-sm">
           <FaCheckCircle className="flex-shrink-0" />
-          <span>Login Successfull</span>
+          <span>{showToast.message}</span>
         </div>
       </div>
 
@@ -102,10 +109,10 @@ const Login = ({ onLoginSuccess, onClose }) => {
         <div className="relative">
           <FaUser className={iconClass} />
           <input
-            type="text"
-            name="username"
-            placeholder="Username"
-            value={formData.username}
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={formData.email}
             onChange={handleChange}
             className={`${inputBase} pl-10 pr-4 py-3`}
           />
@@ -119,7 +126,7 @@ const Login = ({ onLoginSuccess, onClose }) => {
             placeholder="password"
             value={formData.password}
             onChange={handleChange}
-            className={`${inputBase} pl-10 pr-4 py-3`}
+            className={`${inputBase} pl-10 pr-10 py-3`}
           />
           <button
             type="button"
