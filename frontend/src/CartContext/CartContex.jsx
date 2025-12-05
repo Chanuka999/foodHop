@@ -11,27 +11,30 @@ import axios from "axios";
 const CartContext = createContext();
 
 const cartReducer = (state, action) => {
+  const getId = (ci) => ci?._id || ci?.item?._id || ci?.item?.id;
   switch (action.type) {
     case "HYDRATE_CART":
       return action.payload;
     case "ADD_ITEM": {
       const { _id, item, quantity } = action.payload;
-      const exists = state.find((ci) => ci._id === _id);
+      const exists = state.find((ci) => getId(ci) === _id);
       if (exists) {
         return state.map((ci) =>
-          ci._id === _id ? { ...ci, quantity: ci.quantity + quantity } : ci
+          getId(ci) === _id
+            ? { ...ci, quantity: (ci.quantity || 0) + quantity }
+            : ci
         );
       }
       return [...state, { _id, item, quantity }];
     }
     // handle item removal
     case "REMOVE_ITEM": {
-      return state.filter((ci) => ci._id !== action.payload);
+      return state.filter((ci) => getId(ci) !== action.payload);
     }
 
     case "UPDATE_ITEM": {
       const { _id, quantity } = action.payload;
-      return state.map((ci) => (ci._id === _id ? { ...ci, quantity } : ci));
+      return state.map((ci) => (getId(ci) === _id ? { ...ci, quantity } : ci));
     }
     case "CLEAR_CART":
       return [];
@@ -73,7 +76,7 @@ export const CartProvider = ({ children }) => {
       });
   }, []);
 
-  const addToCart = useCallback(async (item, qty) => {
+  const addToCart = useCallback(async (item, qty = 1) => {
     const token = localStorage.getItem("authToken");
     // accept either an item object or a direct id
     const itemId =
@@ -88,9 +91,15 @@ export const CartProvider = ({ children }) => {
         return;
       }
       const localId = itemId || `local-${Date.now()}`;
+      // Avoid spreading a string (if caller passed an id) which would
+      // produce a broken object. Normalize to a proper item object.
+      const itemObj =
+        item && typeof item === "object" ? { ...item } : { _id: itemId };
+      if (!itemObj._id) itemObj._id = itemId;
+
       const payload = {
         _id: localId,
-        item: { ...item, _id: itemId },
+        item: itemObj,
         quantity: qty,
       };
       dispatch({ type: "ADD_ITEM", payload });
@@ -200,7 +209,7 @@ export const CartProvider = ({ children }) => {
     dispatch({ type: "CLEAR_CART" });
   }, []);
 
-  const totalItems = cartItems.reduce((sum, ci) => sum + ci.quantity, 0);
+  const totalItems = cartItems.reduce((sum, ci) => sum + (ci.quantity || 0), 0);
   const totalAmount = cartItems.reduce((sum, ci) => {
     const price = ci?.item?.price ?? 0;
     const qty = ci?.quantity ?? 0;
