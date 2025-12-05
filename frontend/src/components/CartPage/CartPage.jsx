@@ -17,9 +17,15 @@ const CartPage = () => {
 
   const buildImageUrl = (path) => {
     if (!path) return "";
-    return path.startsWith("http")
-      ? path
-      : `${API_URL}/uploads/${path.replace(/^\/uploads\//, "")}`;
+    if (path.startsWith("http")) return path;
+    // If path is an absolute path served by the frontend (starts with '/'), return as-is
+    if (path.startsWith("/")) return path;
+    // If path refers to uploads (backend), ensure full URL
+    if (path.includes("/uploads/") || path.startsWith("uploads/")) {
+      return `${API_URL}/${path.replace(/^\/+/, "")}`;
+    }
+    // Otherwise return path as-is (likely a Vite asset import)
+    return path;
   };
 
   return (
@@ -43,14 +49,20 @@ const CartPage = () => {
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {cartItems.map((ci) => {
+              {cartItems.map((ci, idx) => {
                 const _id = ci._id;
+                const cartId =
+                  _id || ci.id || ci.item?._id || ci.item?.id || null;
                 const item = ci.item || {};
                 const quantity = ci.quantity || 0;
+                const imageSrc = buildImageUrl(
+                  item?.imageUrl || item?.image || ""
+                );
+                const key = _id || item._id || item.id || `ci-${idx}`;
 
                 return (
                   <div
-                    key={_id}
+                    key={key}
                     className="group bg-amber-900/20 p-4 rounded-2xl border-4 border-dashed border-amber-500 backdrop-blur-sm flex flex-col items-center gap-4 transition-all duration-300 hover:border-solid hover:shadow-xl hover:shadow-amber-900/10 transform hover:-translate-y-1 animate-fade-in"
                   >
                     <div
@@ -62,7 +74,7 @@ const CartPage = () => {
                       }
                     >
                       <img
-                        src={buildImageUrl(item?.imageUrl || item?.image || "")}
+                        src={imageSrc || null}
                         alt={item?.name || "item"}
                         className="w-full h-full object-contain"
                       />
@@ -78,9 +90,14 @@ const CartPage = () => {
 
                     <div className="flex items-center gap-3">
                       <button
-                        onClick={() =>
-                          updateQuantity(_id, Math.max(1, quantity - 1))
-                        }
+                        onClick={() => {
+                          if (!cartId)
+                            return console.warn(
+                              "CartPage: missing cartId for update",
+                              ci
+                            );
+                          updateQuantity(cartId, Math.max(1, quantity - 1));
+                        }}
                         className="w-8 h-8 rounded-full bg-amber-900/40 flex items-center justify-center hover:bg-amber-100/50 transition-all duration-200 active-scale-95"
                       >
                         <FaMinus className="w-4 text-amber-100" />
@@ -89,7 +106,14 @@ const CartPage = () => {
                         {quantity}
                       </span>
                       <button
-                        onClick={() => updateQuantity(_id, quantity + 1)}
+                        onClick={() => {
+                          if (!cartId)
+                            return console.warn(
+                              "CartPage: missing cartId for update",
+                              ci
+                            );
+                          updateQuantity(cartId, quantity + 1);
+                        }}
                         className="w-8 h-8 rounded-full bg-amber-900/40 flex items-center justify-center hover:bg-amber-100/50 transition-all duration-200 active-scale-95"
                       >
                         <FaPlus className="w-4 text-amber-100" />
@@ -99,7 +123,14 @@ const CartPage = () => {
                     <div className="flex items-center justify-between w-full">
                       <div className="flex items-center gap-3">
                         <button
-                          onClick={() => removeFromCart(_id)}
+                          onClick={() => {
+                            if (!cartId)
+                              return console.warn(
+                                "CartPage: missing cartId for remove",
+                                ci
+                              );
+                            removeFromCart(cartId);
+                          }}
                           className="w-8 h-8 rounded-full bg-amber-900/40 flex items-center justify-center hover:bg-amber-100/50 transition-all duration-200 active-scale-95"
                           aria-label="Remove item"
                         >

@@ -114,11 +114,16 @@ const OurHomeMenu = () => {
                         <>
                           <button
                             className="w-8 h-8 rounded-full bg-amber-900/40 flex items-center justify-center hover:bg-amber-800/50 transition-colors"
-                            onClick={() =>
+                            onClick={() => {
+                              if (!cartEntry?._id)
+                                return console.warn(
+                                  "OurHomeMenu: missing cartEntry id",
+                                  item
+                                );
                               qty > 1
                                 ? updateQuantity(cartEntry._id, qty - 1)
-                                : removeFromCart(cartEntry._id)
-                            }
+                                : removeFromCart(cartEntry._id);
+                            }}
                           >
                             <FaMinus className="text-amber-100" />
                           </button>
@@ -127,9 +132,14 @@ const OurHomeMenu = () => {
                           </span>
                           <button
                             className="w-8 h-8 rounded-full bg-amber-900/40 flex items-center justify-center hover:bg-amber-800/50 transition-colors"
-                            onClick={() =>
-                              updateQuantity(cartEntry._id, qty + 1)
-                            }
+                            onClick={() => {
+                              if (!cartEntry?._id)
+                                return console.warn(
+                                  "OurHomeMenu: missing cartEntry id",
+                                  item
+                                );
+                              updateQuantity(cartEntry._id, qty + 1);
+                            }}
                           >
                             <FaPlus className="text-amber-100" />
                           </button>
