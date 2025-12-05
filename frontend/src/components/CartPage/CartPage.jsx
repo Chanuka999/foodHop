@@ -50,14 +50,48 @@ const CartPage = () => {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {cartItems.map((ci, idx) => {
-                const _id = ci._id;
+                const _id = ci && (ci._id || ci.id);
                 const cartId =
-                  _id || ci.id || ci.item?._id || ci.item?.id || null;
-                const item = ci.item || {};
-                const quantity = ci.quantity || 0;
-                const imageSrc = buildImageUrl(
-                  item?.imageUrl || item?.image || ""
-                );
+                  _id || (ci && ci.item && (ci.item._id || ci.item.id)) || null;
+
+                // Normalize item: some cart entries are { item: { ... } },
+                // others are the item object itself, or ci.item may be a string id.
+                const item =
+                  ci && typeof ci.item === "object"
+                    ? ci.item
+                    : ci && ci.item
+                    ? { _id: ci.item }
+                    : ci && ci.name
+                    ? ci
+                    : {};
+
+                const quantity = ci && ci.quantity ? ci.quantity : 0;
+
+                // Try several possible image fields (populated from backend or local assets)
+                const candidateImage =
+                  // direct fields on the cart entry
+                  ci?.image ||
+                  ci?.imageUrl ||
+                  // top-level item fields
+                  item?.imageUrl ||
+                  item?.image ||
+                  // some data shapes may nest item again
+                  item?.item?.imageUrl ||
+                  item?.item?.image ||
+                  // fallback to first image in an images array
+                  (item?.images && item.images.length
+                    ? item.images[0]
+                    : null) ||
+                  null;
+
+                const imageSrc = candidateImage
+                  ? buildImageUrl(candidateImage)
+                  : null;
+                const placeholder =
+                  "data:image/svg+xml;utf8," +
+                  encodeURIComponent(
+                    `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'><rect width='100%' height='100%' fill='%233a2b20'/><text x='50%' y='50%' fill='%23f5e0b7' font-size='20' font-family='Arial' dominant-baseline='middle' text-anchor='middle'>No image</text></svg>`
+                  );
                 const key = _id || item._id || item.id || `ci-${idx}`;
 
                 return (
@@ -67,14 +101,10 @@ const CartPage = () => {
                   >
                     <div
                       className="w-24 h-24 flex-shrink-0 cursor-pointer relative overflow-hidden rounded-lg transition-transform duration-300"
-                      onClick={() =>
-                        setSelectedImage(
-                          buildImageUrl(item?.imageUrl || item?.image)
-                        )
-                      }
+                      onClick={() => setSelectedImage(imageSrc)}
                     >
                       <img
-                        src={imageSrc || null}
+                        src={imageSrc || placeholder}
                         alt={item?.name || "item"}
                         className="w-full h-full object-contain"
                       />
