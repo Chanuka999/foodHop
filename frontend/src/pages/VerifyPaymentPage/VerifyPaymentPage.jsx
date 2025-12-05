@@ -1,7 +1,51 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useCart } from "../../CartContext/CartContex";
+import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const VerifyPaymentPage = () => {
-  return <div>verify payment</div>;
+  const { clearCart } = useCart();
+  const { search } = useLocation();
+  const navigate = useNavigate();
+  const [statusMsg, setStatusMsg] = useState("verify payment....");
+
+  const token = localStorage.getItem("authToken");
+  const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
+
+  useEffect(() => {
+    const params = new URLSearchParams(search);
+    const success = params.get("saccess");
+    const session_id = params.get("session_id");
+
+    if (success !== "true" || !session_id) {
+      if (success === "false") {
+        navigate("/checkout", { replace: true });
+        return;
+      }
+      setStatusMsg("Payment failed but order placed for completion");
+      return;
+    }
+
+    axios
+      .get("http://localhost:4000/api/orders/confirm", {
+        params: { session_id },
+        headers: authHeaders,
+      })
+      .then(() => {
+        clearCart();
+        navigate("/myorder", { replace: true });
+      })
+      .catch((err) => {
+        console.error("confirmation error :", err);
+        setStatusMsg("There was an error");
+        clearCart(false);
+      });
+  }, [search, clearCart, navigate, authHeaders]);
+  return (
+    <div className="min-h-screen flex items-center justify-center text-white">
+      <p>{statusMsg}</p>
+    </div>
+  );
 };
 
 export default VerifyPaymentPage;
