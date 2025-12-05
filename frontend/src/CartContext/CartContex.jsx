@@ -57,6 +57,8 @@ export const CartProvider = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
+    if (!token) return; // don't hydrate cart when user is not authenticated
+
     axios
       .get("http://localhost:4000/api/cart", {
         withCredentials: true,
@@ -64,44 +66,125 @@ export const CartProvider = ({ children }) => {
       })
       .then((res) => dispatch({ type: "HYDRATE_CART", payload: res.data }))
       .catch((err) => {
-        if (err.response?.status !== 401) console.error(err);
+        // suppress noisy logs for unauthorized/forbidden (not logged-in) flows
+        const status = err?.response?.status;
+        if (status && [401, 403].includes(status)) return;
+        console.error(err);
       });
   }, []);
 
   const addToCart = useCallback(async (item, qty) => {
     const token = localStorage.getItem("authToken");
-    const res = await axios.post(
-      "http://localhost:4000/api/cart",
-      { itemId: item._id, quantity: qty },
-      {
-        withCredentials: true,
-        headers: { Authorization: `Bearer ${token}` },
+    // accept either an item object or a direct id
+    const itemId =
+      typeof item === "string"
+        ? item
+        : item && (item._id || item.id || item.item?._id || item.item?.id);
+
+    // If not authenticated, update local state only
+    if (!token) {
+      if (!itemId) {
+        console.warn("addToCart called without a valid item id (local)", item);
+        return;
       }
-    );
-    dispatch({ type: "ADD_ITEM", payload: res.data });
+      const localId = itemId || `local-${Date.now()}`;
+      const payload = {
+        _id: localId,
+        item: { ...item, _id: itemId },
+        quantity: qty,
+      };
+      dispatch({ type: "ADD_ITEM", payload });
+      return payload;
+    }
+
+    if (!itemId) {
+      console.warn("addToCart called without a valid item id", item);
+      return;
+    }
+
+    try {
+      const res = await axios.post(
+        "http://localhost:4000/api/cart",
+        { itemId, quantity: qty },
+        {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      dispatch({ type: "ADD_ITEM", payload: res.data });
+      return res.data;
+    } catch (err) {
+      const status = err?.response?.status;
+      if (status && [401, 403].includes(status)) {
+        // user not authorized — don't spam console with stack traces
+        console.warn("addToCart unauthorized", status);
+        return;
+      }
+      console.error("addToCart error", err);
+      throw err;
+    }
   }, []);
 
   // correctly named removeFromCart (was removeFormCart) and dispatches REMOVE_ITEM
   const removeFromCart = useCallback(async (_id) => {
+    if (!_id) {
+      console.warn("removeFromCart called without id", _id);
+      return;
+    }
     const token = localStorage.getItem("authToken");
-    await axios.delete(`http://localhost:4000/api/cart/${_id}`, {
-      withCredentials: true,
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    dispatch({ type: "REMOVE_ITEM", payload: _id });
+    // local fallback when not authenticated
+    if (!token) {
+      dispatch({ type: "REMOVE_ITEM", payload: _id });
+      return { _id };
+    }
+    try {
+      await axios.delete(`http://localhost:4000/api/cart/${_id}`, {
+        withCredentials: true,
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      dispatch({ type: "REMOVE_ITEM", payload: _id });
+    } catch (err) {
+      const status = err?.response?.status;
+      if (status && [401, 403].includes(status)) {
+        console.warn("removeFromCart unauthorized", status);
+        return;
+      }
+      console.error("removeFromCart error", err);
+      throw err;
+    }
   }, []);
 
   const updateQuantity = useCallback(async (_id, qty) => {
+    if (!_id) {
+      console.warn("updateQuantity called without id", _id, qty);
+      return;
+    }
     const token = localStorage.getItem("authToken");
-    const res = await axios.put(
-      `http://localhost:4000/api/cart/${_id}`,
-      { quantity: qty },
-      {
-        withCredentials: true,
-        headers: { Authorization: `Bearer ${token}` },
+    // local fallback when not authenticated
+    if (!token) {
+      dispatch({ type: "UPDATE_ITEM", payload: { _id, quantity: qty } });
+      return { _id, quantity: qty };
+    }
+    try {
+      const res = await axios.put(
+        `http://localhost:4000/api/cart/${_id}`,
+        { quantity: qty },
+        {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      dispatch({ type: "UPDATE_ITEM", payload: res.data });
+      return res.data;
+    } catch (err) {
+      const status = err?.response?.status;
+      if (status && [401, 403].includes(status)) {
+        console.warn("updateQuantity unauthorized", status);
+        return;
       }
-    );
-    dispatch({ type: "UPDATE_ITEM", payload: res.data });
+      console.error("updateQuantity error", err);
+      throw err;
+    }
   }, []);
 
   const clearCart = useCallback(async () => {
