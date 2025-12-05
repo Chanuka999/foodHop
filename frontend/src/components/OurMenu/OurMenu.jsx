@@ -118,11 +118,16 @@ const OurMenu = () => {
                         <>
                           <button
                             className="w-8 h-8 rounded-full bg-amber-900/40 flex items-center justify-center hover:bg-amber-800/50 transition-colors"
-                            onClick={() =>
+                            onClick={() => {
+                              if (!cartEntry?._id)
+                                return console.warn(
+                                  "OurMenu: missing cartEntry id",
+                                  item
+                                );
                               quantity > 1
                                 ? updateQuantity(cartEntry._id, quantity - 1)
-                                : removeFromCart(cartEntry._id)
-                            }
+                                : removeFromCart(cartEntry._id);
+                            }}
                           >
                             <FaMinus className="text-amber-100" />
                           </button>
@@ -131,9 +136,14 @@ const OurMenu = () => {
                           </span>
                           <button
                             className="w-8 h-8 rounded-full bg-amber-900/40 flex items-center justify-center hover:bg-amber-800/50 transition-colors"
-                            onClick={() =>
-                              updateQuantity(cartEntry._id, quantity + 1)
-                            }
+                            onClick={() => {
+                              if (!cartEntry?._id)
+                                return console.warn(
+                                  "OurMenu: missing cartEntry id",
+                                  item
+                                );
+                              updateQuantity(cartEntry._id, quantity + 1);
+                            }}
                           >
                             <FaPlus className="text-amber-100" />
                           </button>

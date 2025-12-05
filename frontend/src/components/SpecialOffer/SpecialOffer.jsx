@@ -116,6 +116,11 @@ const SpecialOffer = () => {
                       <div className="flex items-center gap-3">
                         <button
                           onClick={() => {
+                            if (!cartId)
+                              return console.warn(
+                                "SpecialOffer: missing cartId for update/remove",
+                                item
+                              );
                             qty > 1
                               ? updateQuantity(cartId, qty - 1)
                               : removeFromCart(cartId);
@@ -129,6 +134,11 @@ const SpecialOffer = () => {
                         </span>
                         <button
                           onClick={() => {
+                            if (!cartId)
+                              return console.warn(
+                                "SpecialOffer: missing cartId for update",
+                                item
+                              );
                             updateQuantity(cartId, qty + 1);
                           }}
                           className="w-8 h-8 rounded-full bg-amber-900/40 flex items-center justify-center hover:bg-amber-800/50 transition-all duration-200 active:scale-95 "
