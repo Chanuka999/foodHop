@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { FiArrowDownLeft } from "react-icons/fi";
+import {
+  FiArrowDownLeft,
+  FiBox,
+  FiCheckCircle,
+  FiClock,
+  FiMapPin,
+  FiTruck,
+  FiUser,
+} from "react-icons/fi";
 import { Link } from "react-router-dom";
 import axios from "axios";
 
@@ -142,7 +150,158 @@ const MyOrder = () => {
           </div>
         </div>
 
-        <div className="bg-[#4b3b3b]/80"></div>
+        <div className="bg-[#4b3b3b]/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border-2 border-amber-500/20">
+          <h2 className="text-3xl font-bold mb-8 bg-gradient-to-r from-amber-300 to-amber-500 bg-clip-text">
+            Order History
+          </h2>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-[#3a2b2b]/50">
+                <tr>
+                  <th className="p-4 text-left text-amber-400">Order ID</th>
+                  <th className="p-4 text-left text-amber-400">Customer</th>
+                  <th className="p-4 text-left text-amber-400">Address</th>
+                  <th className="p-4 text-left text-amber-400">Items</th>
+                  <th className="p-4 text-left text-amber-400">Total Items</th>
+                  <th className="p-4 text-left text-amber-400">Price</th>
+                  <th className="p-4 text-left text-amber-400">Payment</th>
+                  <th className="p-4 text-left text-amber-400">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orders.map((order) => {
+                  const totalItems = order.items.reduce(
+                    (sum, item) => sum + item.quantity,
+                    0
+                  );
+                  const totalPrice =
+                    order.total ??
+                    order.items.reduce(
+                      (sum, item) => sum + item.item.price * item.quantity,
+                      0
+                    );
+                  const paymentMethod = getPaymentMethodDetails(
+                    order.paymentMethod
+                  );
+                  const status =
+                    statusStyles[order.status] || statusStyles.processing;
+                  const paymentStatus =
+                    statusStyles[order.paymentStatus] || statusStyles.pending;
+
+                  return (
+                    <tr
+                      key={order._id}
+                      className="border-b border-amber-500/20 hover:bg-[#3a2b2b]/30 transition-colors group"
+                    >
+                      <td className="p-4 text-amber-100 font-mono text-sm">
+                        #{order._id?.slice(-8)}
+                      </td>
+
+                      <td className="p-4">
+                        <div className="flex items-center gap-2">
+                          <FiUser className="text-amber-400" />
+                        </div>
+                        <p className="text-amber-100">
+                          {order.firstName}
+                          {order.lastName}
+                        </p>
+                        <p className="text-sm text-amber-400/60">
+                          {order.phone}
+                        </p>
+                      </td>
+
+                      <td className="p-4">
+                        <div className="flex items-center gap-2">
+                          <FiMapPin className="text-amber-400" />
+                          <div className="text-amber-100/80 text-sm max-w-[200px]">
+                            {order.address},{order.city} - {order.zipCode}
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="p-4">
+                        <div className="space-y-2">
+                          {order.items.map((item, index) => (
+                            <div
+                              key={`${order._id}-${order._id}`}
+                              className="flex items-center gap-3 p-2 bg-[#3a2b2b]/50 rounded-lg"
+                            >
+                              <img
+                                src={`http://localhost:4000${item.item.imageUrl}`}
+                                alt={item.item.name}
+                                className="w-10 h-10 object-cover rounded-lg"
+                              />
+
+                              <div className="flex-1">
+                                <span className="text-amber-100/80 text-sm block">
+                                  {item.item.name}
+                                </span>
+                                <div className="flex items-center gap-2 text-xs text-amber-400/60">
+                                  <span>LKR{item.item.price}</span>
+                                  <span className="mx-1">&dot;</span>
+                                  <span>x{item.quantity}</span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+
+                      <td className="p-4 text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <FiBox className="text-amber-400" />
+                          <span className="text-amber-300 text-lg">
+                            {totalItems}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td className="p-4 text-amber-300 text-lg">
+                        LKR{totalPrice.toFixed(2)}
+                      </td>
+
+                      <td className="p-4">
+                        <div className="flex flex-col gap-2">
+                          <div
+                            className={`${paymentMethod.class} px-3 py-1.5 rounded-lg border text-sm`}
+                          >
+                            {paymentMethod.label}
+                          </div>
+                          <div
+                            className={`${paymentStatus.color} px-3 py-1.5 rounded-lg text-sm`}
+                          >
+                            {paymentStatus.icon}
+                            <span>{paymentStatus.label}</span>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="p-4">
+                        <div className="flex items-center gap-2">
+                          <span className={`${status.color} text-xl`}>
+                            {status.icon}
+                          </span>
+                          <span
+                            className={`px-4 py-2 rounded-lg ${status.bg} ${status.color} border border-amber-500/20 text-sm`}
+                          >
+                            {status.label}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {orders.length === 0 && (
+            <div className="text-center py-12 text-amber-100/60 text-xl">
+              No order found
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
