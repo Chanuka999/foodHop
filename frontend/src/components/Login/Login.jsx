@@ -64,15 +64,16 @@ const Login = ({ onLoginSuccess, onClose }) => {
       }
     } catch (err) {
       console.error("Axios error :", err);
-      if (err.responce) {
+      // fix typo: use `response` and guard access
+      if (err.response) {
         console.error("server res:", err.response.status, err.response.data);
       }
-      const msg = err.responce?.data?.message || err.message || "Login failed";
+      const msg = err.response?.data?.message || err.message || "Login failed";
 
       setShowToast({ visible: true, message: msg, isError: true });
+      // hide toast after a short delay; do not call onLoginSuccess here
       setTimeout(() => {
         setShowToast({ visible: false, message: "", isError: false });
-        onLoginSuccess(res.data.token);
       }, 2000);
     }
   };
