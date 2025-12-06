@@ -69,11 +69,15 @@ const Checkout = () => {
     subtotal,
     tax,
     total: Number((subtotal + tax).toFixed(2)),
+    // backend expects items as { item: { _id, name, price }, quantity }
     items: cartItems.map((ci) => {
       const itm = ci.item || {};
       return {
-        name: itm?.name || "Unnamed",
-        price: Number(itm?.price ?? 0),
+        item: {
+          _id: itm?._id || itm?.id || null,
+          name: itm?.name || "Unnamed",
+          price: Number(itm?.price ?? 0),
+        },
         quantity: ci.quantity || 0,
         imageUrl: itm?.imageUrl || itm?.image || "",
       };
