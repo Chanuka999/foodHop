@@ -3,6 +3,9 @@ import mongoose from "mongoose";
 const orderItemSchema = new mongoose.Schema(
   {
     item: {
+      _id: {
+        type: String,
+      },
       name: {
         type: String,
         required: true,

@@ -18,12 +18,12 @@ const CartPage = () => {
   const buildImageUrl = (path) => {
     if (!path) return "";
     if (path.startsWith("http")) return path;
-    // If path is an absolute path served by the frontend (starts with '/'), return as-is
-    if (path.startsWith("/")) return path;
     // If path refers to uploads (backend), ensure full URL
     if (path.includes("/uploads/") || path.startsWith("uploads/")) {
       return `${API_URL}/${path.replace(/^\/+/, "")}`;
     }
+    // If path is an absolute path served by the frontend (starts with '/'), return as-is
+    if (path.startsWith("/")) return path;
     // Otherwise return path as-is (likely a Vite asset import)
     return path;
   };
@@ -50,6 +50,9 @@ const CartPage = () => {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {cartItems.map((ci, idx) => {
+                // Debug: log cart entry structure to help diagnose image issues
+                if (idx === 0) console.log("CartPage first item:", ci);
+
                 const _id = ci && (ci._id || ci.id);
                 const cartId =
                   _id || (ci && ci.item && (ci.item._id || ci.item.id)) || null;

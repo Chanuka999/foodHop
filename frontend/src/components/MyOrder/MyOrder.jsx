@@ -15,29 +15,71 @@ const MyOrder = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoding] = useState(true);
   const [error, setError] = useState(null);
+  const [failedImages, setFailedImages] = useState(new Set());
+
+  const API_URL = "http://localhost:4000";
+
+  // Helper to build image URLs consistently
+  const buildImageUrl = (path) => {
+    if (!path) return "";
+    if (path.startsWith("http")) return path;
+    // If path refers to uploads (backend), ensure full URL
+    if (path.includes("/uploads/") || path.startsWith("uploads/")) {
+      return `${API_URL}/${path.replace(/^\/+/, "")}`;
+    }
+    // If path is an absolute path served by the frontend (starts with '/'), return as-is
+    if (path.startsWith("/")) return `${API_URL}${path}`;
+    // Otherwise return path as-is (likely a Vite asset import)
+    return path;
+  };
+
+  const handleImageError = (imageUrl) => {
+    setFailedImages((prev) => new Set([...prev, imageUrl]));
+  };
 
   const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/api/orders", {
-          params: { email: user?.email },
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-        });
-        const formattedOrders = response.data.map((order) => ({
+        // Fetch orders and items in parallel. Orders may not include imageUrl
+        // (older schema). Use catalog items to lookup images by name when missing.
+        const [ordersRes, itemsRes] = await Promise.all([
+          axios.get("http://localhost:4000/api/orders", {
+            params: { email: user?.email },
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          }),
+          axios.get("http://localhost:4000/api/items"),
+        ]);
+
+        const itemsList = Array.isArray(itemsRes.data) ? itemsRes.data : [];
+        const itemsByName = itemsList.reduce((acc, it) => {
+          if (it?.name) acc[it.name.toLowerCase()] = it;
+          return acc;
+        }, {});
+
+        const formattedOrders = ordersRes.data.map((order) => ({
           ...order,
           items:
-            order.items?.map((entry) => ({
-              _id: entry._id,
-              item: {
-                ...entry.item,
-                imageUrl: entry.item.imageUrl, // <-- CORRECT: pull from entry.item
-              },
-              quantity: entry.quantity,
-            })) || [],
+            (order.items || []).map((entry) => {
+              const name = entry?.item?.name || "";
+              const catalogItem = itemsByName[name.toLowerCase()];
+              // Prefer imageUrl on the order entry, otherwise use catalog lookup
+              const resolvedImage =
+                entry?.item?.imageUrl || catalogItem?.imageUrl || "";
+              return {
+                _id: entry._id,
+                item: {
+                  // keep existing stored fields
+                  ...entry.item,
+                  // add resolved imageUrl (may be empty)
+                  imageUrl: resolvedImage,
+                },
+                quantity: entry.quantity,
+              };
+            }) || [],
           createdAt: new Date(order.createdAt).toLocaleDateString("en-IN", {
             year: "numeric",
             month: "long",
@@ -222,29 +264,39 @@ const MyOrder = () => {
 
                       <td className="p-4">
                         <div className="space-y-2">
-                          {order.items.map((item, index) => (
-                            <div
-                              key={`${order._id}-${order._id}`}
-                              className="flex items-center gap-3 p-2 bg-[#3a2b2b]/50 rounded-lg"
-                            >
-                              <img
-                                src={`http://localhost:4000${item.item.imageUrl}`}
-                                alt={item.item.name}
-                                className="w-10 h-10 object-cover rounded-lg"
-                              />
+                          {order.items.map((item, index) => {
+                            const imageUrl = buildImageUrl(item.item.imageUrl);
+                            const hasError = failedImages.has(imageUrl);
+                            const placeholder =
+                              "data:image/svg+xml;utf8," +
+                              encodeURIComponent(
+                                `<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'><rect width='100%' height='100%' fill='%233a2b20'/><text x='50%' y='50%' fill='%23f5e0b7' font-size='10' font-family='Arial' dominant-baseline='middle' text-anchor='middle'>IMG</text></svg>`
+                              );
+                            return (
+                              <div
+                                key={`${order._id}-${index}`}
+                                className="flex items-center gap-3 p-2 bg-[#3a2b2b]/50 rounded-lg"
+                              >
+                                <img
+                                  src={hasError ? placeholder : imageUrl}
+                                  alt={item.item.name}
+                                  className="w-10 h-10 object-cover rounded-lg"
+                                  onError={() => handleImageError(imageUrl)}
+                                />
 
-                              <div className="flex-1">
-                                <span className="text-amber-100/80 text-sm block">
-                                  {item.item.name}
-                                </span>
-                                <div className="flex items-center gap-2 text-xs text-amber-400/60">
-                                  <span>LKR{item.item.price}</span>
-                                  <span className="mx-1">&dot;</span>
-                                  <span>x{item.quantity}</span>
+                                <div className="flex-1">
+                                  <span className="text-amber-100/80 text-sm block">
+                                    {item.item.name}
+                                  </span>
+                                  <div className="flex items-center gap-2 text-xs text-amber-400/60">
+                                    <span>LKR{item.item.price}</span>
+                                    <span className="mx-1">&dot;</span>
+                                    <span>x{item.quantity}</span>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </td>
 

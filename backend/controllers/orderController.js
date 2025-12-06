@@ -1,4 +1,5 @@
 import Order from "../models/orderModel.js";
+import itemModel from "../models/itemModel.js";
 import "dotenv/config";
 import Stripe from "stripe";
 
@@ -27,9 +28,10 @@ export const createOrder = async (req, res) => {
       return res.status(400).json({ message: "Invalid or empty items array" });
     }
 
-    // FIX 2: clean item mapping
+    // FIX 2: clean item mapping - include itemId for later image lookup
     const orderItems = items.map(({ item, quantity }) => ({
       item: {
+        _id: item?._id || item?.id,
         name: item?.name || "Unknown",
         price: item?.price || 0,
       },
@@ -161,14 +163,46 @@ export const getOrders = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    const formatted = orders.map((o) => ({
-      ...o,
-      items: o.items.map((i) => ({
-        _id: i._id,
-        item: i.item,
-        quantity: i.quantity,
-      })),
-    }));
+    const host = `${req.protocol}://${req.get("host")}`;
+
+    // For each order, look up item images by itemId
+    const formatted = await Promise.all(
+      orders.map(async (o) => {
+        const itemsWithImages = await Promise.all(
+          (o.items || []).map(async (i) => {
+            let imageUrl = "";
+            if (i.item?._id) {
+              try {
+                const fullItem = await itemModel.findById(i.item._id).lean();
+                if (fullItem?.imageUrl) {
+                  imageUrl = fullItem.imageUrl.startsWith("http")
+                    ? fullItem.imageUrl
+                    : `${host}${fullItem.imageUrl}`;
+                }
+              } catch (err) {
+                console.warn(
+                  "Failed to lookup item image:",
+                  i.item._id,
+                  err.message
+                );
+              }
+            }
+            return {
+              _id: i._id,
+              item: {
+                ...i.item,
+                imageUrl,
+              },
+              quantity: i.quantity,
+            };
+          })
+        );
+        return {
+          ...o,
+          items: itemsWithImages,
+        };
+      })
+    );
 
     res.json(formatted);
   } catch (error) {
