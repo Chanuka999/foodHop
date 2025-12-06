@@ -13,9 +13,9 @@ FoodHop is a modern full-stack Food Ordering Web Application built with the MERN
 
 **Quick links**
 
-- Backend: `backend/`
-- Frontend: `frontend/`
-- Admin panel: `admin/`
+- Backend: [Food Hop Backend](superb-solace-production.up.railway.app)
+- Frontend: [Food Hop Frontend](https://food-hop.vercel.app/)
+- Admin panel: [Food Hop Admin Panel](https://food-hop-quy8.vercel.app/)
 
 ## Prerequisites
 
