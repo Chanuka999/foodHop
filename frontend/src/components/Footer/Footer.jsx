@@ -108,7 +108,7 @@ const Footer = () => {
 
         <div className="border-t border-amber-800 pt-8 mt-8 text-center">
           <p className="text-amber-400 text-lg mb-2 font-playfair">
-            &copy:2026 Foodie-Frenzy.All rights reserved.
+            &copy:2026 Food Hop.All rights reserved.
           </p>
           <div className="group inline-block">
             <a
@@ -116,7 +116,7 @@ const Footer = () => {
               target="_blank"
               className="text-lg font-sacramento bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 bg-clip-text text-transparent hover:text-purple-300 transition-all duration-500"
             >
-              Designed by Hexagon Digital services
+              Designed by Chanuka Randitha
             </a>
           </div>
         </div>

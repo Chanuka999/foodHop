@@ -127,7 +127,7 @@ const Navbar = () => {
                 to="/"
                 className="text-lg md:text-xl lg:text-2xl xl:text-3xl bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent font-monsieur tracking-wider whitespace-nowrap"
               >
-                Foodie-Frenzy
+                FOOD HOP
               </NavLink>
               <div className="h-[3px] bg-gradient-to-r from-amber-600/30 via-amber-400/50 to-amber-600/30 w-full mt-1" />
             </div>
