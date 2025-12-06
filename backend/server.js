@@ -16,15 +16,20 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 //middleware
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://food-hop.vercel.app",
+  "https://food-hop-quy8.vercel.app",
+];
+
 app.use(
   cors({
     origin: (origin, callback) => {
-      const allowedOrigin = ["http://localhost:5173", "http://localhost:5174"];
-      if (!origin || allowedOrigin.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by cors"));
-      }
+      // allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
   })
