@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { API_URL } from "../../config/api";
 import { cardData, additionalData } from "../../assets/dummydata";
 import { useCart } from "../../CartContext/CartContex";
 import { FaFire, FaHeart, FaPlus, FaStar } from "react-icons/fa";
@@ -14,7 +15,7 @@ const SpecialOffer = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:4000/api/items")
+      .get(`${API_URL}/api/items`)
       .then((res) => setItems(res.data.items ?? res.data))
       .catch((err) => console.error(err));
   }, []);

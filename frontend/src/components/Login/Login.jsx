@@ -11,8 +11,9 @@ import {
 } from "react-icons/fa";
 import { iconClass, inputBase } from "../../assets/dummydata";
 import axios from "axios";
+import { API_URL } from "../../config/api";
 
-const url = "http://localhost:4000";
+const url = API_URL;
 
 const Login = ({ onLoginSuccess, onClose }) => {
   const [showToast, setShowToast] = useState({

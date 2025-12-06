@@ -10,14 +10,13 @@ import {
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { API_URL } from "../../config/api";
 
 const MyOrder = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoding] = useState(true);
   const [error, setError] = useState(null);
   const [failedImages, setFailedImages] = useState(new Set());
-
-  const API_URL = "http://localhost:4000";
 
   // Helper to build image URLs consistently
   const buildImageUrl = (path) => {
@@ -45,13 +44,13 @@ const MyOrder = () => {
         // Fetch orders and items in parallel. Orders may not include imageUrl
         // (older schema). Use catalog items to lookup images by name when missing.
         const [ordersRes, itemsRes] = await Promise.all([
-          axios.get("http://localhost:4000/api/orders", {
+          axios.get(`${API_URL}/api/orders`, {
             params: { email: user?.email },
             headers: {
               Authorization: `Bearer ${localStorage.getItem("authToken")}`,
             },
           }),
-          axios.get("http://localhost:4000/api/items"),
+          axios.get(`${API_URL}/api/items`),
         ]);
 
         const itemsList = Array.isArray(itemsRes.data) ? itemsRes.data : [];

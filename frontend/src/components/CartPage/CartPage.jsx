@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { useCart } from "../../CartContext/CartContex";
 import { Link } from "react-router-dom";
 import { FaMinus, FaPlus, FaTimes, FaTrash } from "react-icons/fa";
-
-const API_URL = "http://localhost:4000";
+import { API_URL } from "../../config/api";
 
 const CartPage = () => {
   const {

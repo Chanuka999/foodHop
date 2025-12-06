@@ -3,6 +3,7 @@ import { FaArrowLeft, FaLock } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCart } from "../../CartContext/CartContex";
 import axios from "axios";
+import { API_URL } from "../../config/api";
 
 const Checkout = () => {
   const { totalAmount, cartItems, clearCart } = useCart();
@@ -36,7 +37,7 @@ const Checkout = () => {
       if (paymentStatus === "success" && sessionId) {
         axios
           .post(
-            "http://localhost:4000/api/orders/confirm",
+            `${API_URL}/api/orders/confirm`,
             { sessionId },
             { headers: authHeaders }
           )
@@ -88,18 +89,14 @@ const Checkout = () => {
 
     try {
       if (formData.paymentMethod === "online") {
-        const { data } = await axios.post(
-          "http://localhost:4000/api/orders",
-          payload,
-          { headers: authHeaders }
-        );
+        const { data } = await axios.post(`${API_URL}/api/orders`, payload, {
+          headers: authHeaders,
+        });
         window.location.href = data.checkoutUrl;
       } else {
-        const { data } = await axios.post(
-          "http://localhost:4000/api/orders",
-          payload,
-          { headers: authHeaders }
-        );
+        const { data } = await axios.post(`${API_URL}/api/orders`, payload, {
+          headers: authHeaders,
+        });
         clearCart();
         navigate("/myorder", { state: { order: data.order } });
       }

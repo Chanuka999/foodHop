@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { API_URL } from "../../config/api";
 import { useCart } from "../../CartContext/CartContex";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -27,7 +28,7 @@ const VerifyPaymentPage = () => {
     }
 
     axios
-      .get("http://localhost:4000/api/orders/confirm", {
+      .get(`${API_URL}/api/orders/confirm`, {
         params: { session_id },
         headers: authHeaders,
       })

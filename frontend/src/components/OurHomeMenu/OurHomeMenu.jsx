@@ -5,6 +5,7 @@ import { FaMinus, FaPlus } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import "./OurHomeMenu.css";
 import axios from "axios";
+import { API_URL } from "../../config/api";
 
 const categories = [
   "Breakfast",
@@ -23,7 +24,7 @@ const OurHomeMenu = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:4000/api/items")
+      .get(`${API_URL}/api/items`)
       .then((res) => {
         const grouped = res.data.reduce((acc, item) => {
           acc[item.category] = acc[item.category] || [];

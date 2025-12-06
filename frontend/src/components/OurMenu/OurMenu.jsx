@@ -5,6 +5,7 @@ import { FaMinus, FaPlus } from "react-icons/fa";
 
 import "./OurMenu.css";
 import axios from "axios";
+import { API_URL } from "../../config/api";
 
 const categories = [
   "Breakfast",
@@ -24,7 +25,7 @@ const OurMenu = () => {
   useEffect(() => {
     const fetchMenu = async () => {
       try {
-        const res = await axios.get("http://localhost:4000/api/items");
+        const res = await axios.get(`${API_URL}/api/items`);
         const byCategory = res.data.reduce((acc, item) => {
           const cat = item.category || "Uncategorized";
           acc[cat] = acc[cat] || [];

@@ -7,6 +7,7 @@ import React, {
   useReducer,
 } from "react";
 import axios from "axios";
+import { API_URL } from "../config/api";
 
 const CartContext = createContext();
 
@@ -63,7 +64,7 @@ export const CartProvider = ({ children }) => {
     if (!token) return; // don't hydrate cart when user is not authenticated
 
     axios
-      .get("http://localhost:4000/api/cart", {
+      .get(`${API_URL}/api/cart`, {
         withCredentials: true,
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -113,7 +114,7 @@ export const CartProvider = ({ children }) => {
 
     try {
       const res = await axios.post(
-        "http://localhost:4000/api/cart",
+        `${API_URL}/api/cart`,
         { itemId, quantity: qty },
         {
           withCredentials: true,
@@ -147,7 +148,7 @@ export const CartProvider = ({ children }) => {
       return { _id };
     }
     try {
-      await axios.delete(`http://localhost:4000/api/cart/${_id}`, {
+      await axios.delete(`${API_URL}/api/cart/${_id}`, {
         withCredentials: true,
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -176,7 +177,7 @@ export const CartProvider = ({ children }) => {
     }
     try {
       const res = await axios.put(
-        `http://localhost:4000/api/cart/${_id}`,
+        `${API_URL}/api/cart/${_id}`,
         { quantity: qty },
         {
           withCredentials: true,
@@ -199,7 +200,7 @@ export const CartProvider = ({ children }) => {
   const clearCart = useCallback(async () => {
     const token = localStorage.getItem("authToken");
     await axios.post(
-      "http://localhost:4000/api/cart/clear",
+      `${API_URL}/api/cart/clear`,
       {},
       {
         withCredentials: true,
