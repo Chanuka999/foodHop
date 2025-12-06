@@ -7,10 +7,15 @@ const List = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const API_URL =
+    (typeof process !== "undefined" && process.env?.REACT_APP_API_URL) ||
+    import.meta.env?.VITE_API_URL ||
+    "http://localhost:4000";
+
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const { data } = await axios.get("http://localhost:4000/api/items");
+        const { data } = await axios.get(`${API_URL}/api/items`);
         setItems(data);
       } catch (error) {
         console.error("error fetching Items", error);
@@ -25,7 +30,7 @@ const List = () => {
     if (!window.confirm("Are you sure you want to delete this item")) return;
 
     try {
-      await axios.delete(`http://localhost:4000/api/items/${itemId}`);
+      await axios.delete(`${API_URL}/api/items/${itemId}`);
       setItems((prev) => prev.filter((item) => item._id !== itemId));
       console.log("deleted item ID", itemId);
     } catch (error) {

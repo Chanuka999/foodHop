@@ -13,18 +13,19 @@ const Order = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const API_URL =
+    (typeof process !== "undefined" && process.env?.REACT_APP_API_URL) ||
+    import.meta.env?.VITE_API_URL ||
+    "http://localhost:4000";
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:4000/api/orders/getall",
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
+        const response = await axios.get(`${API_URL}/api/orders/getall`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
 
         const formatted = response.data.map((order) => ({
           ...order,
@@ -60,7 +61,7 @@ const Order = () => {
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      await axios.put(`http://localhost:4000/api/orders/getall/${orderId}`, {
+      await axios.put(`${API_URL}/api/orders/getall/${orderId}`, {
         status: newStatus,
       });
       setOrders(
@@ -182,9 +183,7 @@ const Order = () => {
                               className="flex items-center gap-3 rounded-lg"
                             >
                               <img
-                                src={`http://localhost:4000${
-                                  itm.item?.imageUrl || ""
-                                }`}
+                                src={`${API_URL}${itm.item?.imageUrl || ""}`}
                                 alt={itm.item?.name || "item"}
                                 className="w-10 h-10 object-cover rounded-lg"
                               />

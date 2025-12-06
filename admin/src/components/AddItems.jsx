@@ -1,5 +1,4 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { styles } from "../assets/dummyAdmin";
 import { FiHeart, FiStar, FiUpload } from "react-icons/fi";
 import axios from "axios";
@@ -28,6 +27,25 @@ const AddItems = () => {
   ]);
 
   const [hoverRating, setHoverRating] = useState(0);
+
+  // fetched items from backend (optional - logged and stored)
+  const [items, setItems] = useState([]);
+
+  useEffect(() => {
+    // support both CRA-style and Vite-style env vars; guard `process` in browser
+    const API_URL =
+      (typeof process !== "undefined" && process.env?.REACT_APP_API_URL) ||
+      import.meta.env?.VITE_API_URL ||
+      "http://localhost:4000";
+
+    fetch(`${API_URL}/api/items`)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Fetched items:", data);
+        setItems(data);
+      })
+      .catch((err) => console.error("Error fetching items:", err));
+  }, []);
 
   const handdleInputChange = (e) => {
     const { name, value } = e.target;
@@ -59,7 +77,7 @@ const AddItems = () => {
         if (key === "preview") return;
         payload.append(key, val);
       });
-      await axios.post("http://localhost:4000/api/items", payload, {
+      await axios.post(`${API_URL}/api/items`, payload, {
         headers: { "content-Type": "multipart/form-data" },
       });
       setFormData({
