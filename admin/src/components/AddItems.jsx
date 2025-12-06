@@ -31,13 +31,13 @@ const AddItems = () => {
   // fetched items from backend (optional - logged and stored)
   const [items, setItems] = useState([]);
 
-  useEffect(() => {
-    // support both CRA-style and Vite-style env vars; guard `process` in browser
-    const API_URL =
-      (typeof process !== "undefined" && process.env?.REACT_APP_API_URL) ||
-      import.meta.env?.VITE_API_URL ||
-      "http://localhost:4000";
+  const API_URL =
+    (typeof process !== "undefined" && process.env?.REACT_APP_API_URL) ||
+    import.meta.env?.VITE_API_URL ||
+    "http://localhost:4000";
 
+  useEffect(() => {
+    // fetch items from backend
     fetch(`${API_URL}/api/items`)
       .then((res) => res.json())
       .then((data) => {
