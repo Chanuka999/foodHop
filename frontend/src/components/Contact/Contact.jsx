@@ -22,17 +22,33 @@ const Contact = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("form submit", formData);
-    toast.success("Your query has been submitted successfully", {
+    const message = `
+    Name: ${formData.name}
+    Phone: ${formData.phone}
+    Email: ${formData.email}
+    Address: ${formData.address}
+    Dish: ${formData.dish}
+    Query: ${formData.query}
+  `;
+
+    const encodedMessage = encodeURIComponent(message);
+
+    const whatsappNumber = "0772849767";
+
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodedMessage}`;
+
+    toast.success("OPENING WHAPSAPP...", {
       style: {
-        border: "1px solid #f59e0b",
+        border: "2px solid #f59e0b",
         padding: "16px",
         color: "#fff",
         background: "rgba(0,0,0,0.8)",
         backdropFilter: "blur(10px)",
       },
-      iconTheme: { primary: "#f59eDb", secondary: "#fff" },
+      iconTheme: { primary: "#f59e0b", secondary: "#fff" },
     });
+    window.open(whatsappUrl, "_blank");
+
     setFormData({
       name: "",
       phone: "",
