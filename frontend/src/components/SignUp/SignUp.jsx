@@ -27,15 +27,7 @@ const SignUp = () => {
   });
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (showToast.visible && showToast.message === "sign up successfull") {
-      const timer = setTimeout(() => {
-        setShowToast({ visible: true, message: "", icon: null });
-        navigate("/login");
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [showToast, navigate]);
+  // showToast controlled from handleSubmit; navigate after success there
 
   const toggleShowPassword = () => setShowPassword((prev) => !prev);
 
@@ -53,22 +45,24 @@ const SignUp = () => {
         localStorage.setItem("authToken", res.data.token);
         setShowToast({
           visible: true,
-          message: "Sign up successfull",
+          message: "Sign up successful",
           icon: <FaCheckCircle />,
         });
+        // navigate to home after short delay so toast is visible
+        setTimeout(() => navigate("/"), 1400);
         return;
       }
       throw new Error(res.data.message || "Registration failed");
     } catch (err) {
       const msg =
         err.response?.data?.message || err.message || "Registration failed";
-      setShowToast({ visible: false, message: msg, icon: <FaCheckCircle /> });
+      setShowToast({ visible: true, message: msg, icon: <FaCheckCircle /> });
     }
   };
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#1a120b] p-4">
-      {showToast && (
-        <AwesomeToast message="Sign up successfull" icon={<FaCheckCircle />} />
+      {showToast.visible && (
+        <AwesomeToast message={showToast.message} icon={showToast.icon} />
       )}
       <div className="w-full max-w-md bg-gradient-to-br from-[#2D1B0E] to-[#4a372a] p-8 rounded-xl shadow-lg border-4 border-amber-700/30 transform transition-all duration-300 hover:shadow-2xl">
         <h1 className="text-3xl font-bold text-center bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent mb-6 hover:scale-105 transition-transform">
@@ -80,7 +74,7 @@ const SignUp = () => {
             type="text"
             name="username"
             placeholder="username"
-            value={FormData.username}
+            value={formData.username}
             onChange={handleChange}
             className="w-full px-4 py-3 rounded-lg bg-[#2D1B0E] text-amber-100 placeholder-amber-400 focus:outline-none focus:ring-2 focus-ring-amber-600 transition-all duration-200 hover:scale-[1.02]"
             required
@@ -90,7 +84,7 @@ const SignUp = () => {
             type="email"
             name="email"
             placeholder="email"
-            value={FormData.username}
+            value={formData.email}
             onChange={handleChange}
             className="w-full px-4 py-3 rounded-lg bg-[#2D1B0E] text-amber-100 placeholder-amber-400 focus:outline-none focus:ring-2 focus-ring-amber-600 transition-all duration-200 hover:scale-[1.02]"
             required
@@ -101,7 +95,7 @@ const SignUp = () => {
               type={showPassword ? "text" : "password"}
               name="password"
               placeholder="password"
-              value={FormData.password}
+              value={formData.password}
               onChange={handleChange}
               className="w-full px-4 py-3 rounded-lg bg-[#2D1B0E] text-amber-100 placeholder-amber-400 focus:outline-none focus:ring-2 focus-ring-amber-600 transition-all duration-200 hover:scale-[1.02]"
               required
