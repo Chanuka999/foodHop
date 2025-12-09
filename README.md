@@ -2,6 +2,8 @@
 
 FoodHop is a modern full-stack Food Ordering Web Application built with the MERN stack (MongoDB, Express, React, Node). Users can browse menus, place orders, and track order status. This repository contains three apps in a single workspace:
 
+![image alt](https://github.com/Chanuka999/foodHop/blob/a7cf82258d1f832e6c97a20ed8350e6b6f03cf00/foodHop.png)
+
 - `backend/` — Express + Node API, MongoDB models and controllers, file uploads.
 - `frontend/` — React (Vite) customer-facing site.
 - `admin/` — React (Vite) admin dashboard for managing items and orders.
